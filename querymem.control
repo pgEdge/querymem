@@ -1,0 +1,4 @@
+comment = 'PG Query Memory Extension'
+default_version = '1.0'
+module_pathname = '$libdir/querymem'
+relocatable = true
