@@ -9,5 +9,6 @@ RUN apt-get -y update && apt-get -y upgrade && \
 
 COPY . /build
 COPY docker-init.sql /docker-entrypoint-initdb.d
+COPY docker-pg-conf.sh /docker-entrypoint-initdb.d
 
 RUN cd /build && make && make install
