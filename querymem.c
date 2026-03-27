@@ -169,7 +169,8 @@ querymem_ExecutorStart(QueryDesc *queryDesc, int eflags)
 	int32_t estimate = 0;
 
 	if (querymem_log_size > -1 || querymem_max_query_size > -1)
-		estimate = estimate_from_plan(queryDesc->plannedstmt);
+		if (!(eflags & EXEC_FLAG_EXPLAIN_ONLY))
+			estimate = estimate_from_plan(queryDesc->plannedstmt);
 
 	if (querymem_max_query_size > -1 && estimate > querymem_max_query_size)
 		ereport(ERROR,

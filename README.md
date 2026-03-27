@@ -14,6 +14,9 @@ count all nodes in a query plan and project the maximum amount of RAM it
 _could_ allocate based on current GUC settings. Check your big queries for
 maximum consumption before you even run them!
 
+The extension even provides GUCs to log or outright cancel queries that go
+over certain thresholds. Never let a rogue query exhaust your memory pool!
+
 ## Installation
 
 Installing this extension is simple:
@@ -25,7 +28,14 @@ make
 sudo make install
 ```
 
-Then connect to any database and execute this statement:
+Then add `querymem` to `shared_preload_libraries` in your `postgresql.conf`:
+and choose your desired mode like so:
+
+```ini
+shared_preload_libraries = 'querymem'
+```
+
+Finally, connect to any database and create the extension:
 
 ```sql
 CREATE EXTENSION querymem;
@@ -90,6 +100,18 @@ SELECT get_query_mem('SELECT 1');
           4096
 ```
 
+## Configuration
+
+The querymem extension currently accepts two parameters:
+
+* `querymem.log_size` - Log all queries with an estimated work_mem size over 
+  this amount of kilobytes. Default 10x `work_mem`. Set to -1 to disable.
+* `querymem.max_query_size` - Cancel all queries with an estimated work_mem
+  size over this amount of kilobytes. Default 100x `work_mem`. Set to -1 to
+  disable.
+
+Both parameters require a SIGHUP or `pg_reload_conf()` to change.
+
 ## Examples
 
 The following query uses several common query techniques on standard `pgbench`
@@ -112,8 +134,33 @@ $$);
 
  get_query_mem 
 ---------------
-         57344
+         45056
 ```
+
+Next, we'll artificially lower the `max_query_size` and attempt to actually
+run the query:
+
+```sql
+ALTER SYSTEM SET querymem.max_query_size = '30MB';
+SELECT pg_reload_conf();
+
+WITH bdata AS (
+  SELECT * FROM pgbench_branches WHERE bid > 5
+)
+SELECT a.* 
+  FROM pgbench_accounts a
+  JOIN bdata b ON (b.bid = a.bid)
+ WHERE EXISTS (
+         SELECT * FROM pgbench_tellers t
+          WHERE t.bid = b.bid
+       )
+ ORDER BY b.bid;
+
+ERROR:  This query may use too much work_mem (45056k).
+HINT:  Increase the querymem.max_query_size GUC to continue.
+```
+
+The `ERROR` and `HINT` also appear in the log along with the query body.
 
 ## Discussion
 
@@ -126,6 +173,7 @@ Postgres extensions which do the following:
 * Traverse query plans.
 * Decode query plan nodes.
 * Use GUCs.
+* Employ backend hooks.
 
 ## Compatibility
 
