@@ -1,3 +1,10 @@
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/img/pgedge-labs-dark.svg">
+    <img alt="pgEdge Labs" src="docs/img/pgedge-labs-light.svg" width="320">
+  </picture>
+</div>
+
 # The querymem Postgres Extension
 
 We've all heard the warning:
