@@ -208,9 +208,9 @@ _PG_init(void)
 		"Log any queries exceeding this amount of estimated memory.",
 		"Default: 10x work_mem. Set to -1 to disable.",
 		&querymem_log_size,
-		work_mem * 10, work_mem,	// Same limits as work_mem
+		work_mem * 10, -1,		// Same limits as work_mem, -1 to disable
 		MAX_KILOBYTES,
-		PGC_SIGHUP,				// Only supported by daemon reload
+		PGC_SIGHUP,			// Only supported by daemon reload
 		GUC_UNIT_KB,			// This can be assigned in KB, MB, GB, etc.
 		NULL, NULL, NULL		// No hooks necessary
 	);
@@ -220,9 +220,9 @@ _PG_init(void)
 		"Prevent execution of any query with estimated memory over this limit.",
 		"Default: 100x work_mem. Set to -1 to disable.",
 		&querymem_max_query_size,
-		work_mem * 100, work_mem,	// Same limits as work_mem
+		work_mem * 100, -1,		// Same limits as work_mem, -1 to disable
 		MAX_KILOBYTES,
-		PGC_SIGHUP,				// Only supported by daemon reload
+		PGC_SIGHUP,			// Only supported by daemon reload
 		GUC_UNIT_KB,			// This can be assigned in KB, MB, GB, etc.
 		NULL, NULL, NULL		// No hooks necessary
 	);
